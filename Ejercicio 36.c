@@ -33,10 +33,10 @@ void alta(datos_t);
 void listar(FILE *,char * n);
 void consulta(void);
 
-struct pila
+struct cola
 {
     datos_t dato;
-    struct pila *l;
+    struct cola *l;
 };
 
 int menu(void);
@@ -48,7 +48,7 @@ int main()
     datos_t ordenar[100];
     datos_t datos;
     datos_t auxo;//auxiliar para ordenar
-    struct pila *p=NULL, *aux;
+    struct cola *p=NULL, *aux,*u;
     datos_t bf;
     FILE *fp;
     ///RECUPERO DATOS   lea al archivo "contactos.dat" creado en el Ejercicio 35
@@ -69,7 +69,7 @@ int main()
     {
         for(k=j+1;k<i;k++)
         {
-            if(strcmp(ordenar[j].nombre,ordenar[k].nombre)==1)
+            if(strcmp(ordenar[j].apellido,ordenar[k].apellido)==1)
             {
                 auxo=ordenar[k];
                 ordenar[k]=ordenar[j];
@@ -80,20 +80,29 @@ int main()
 ///FIN ORDEN ALFABETICO
 
 ///GUARDADO EN LISTA  crear una lista, en memoria dinámica, ordenada alfabéticamente.
-    for(j=0;j<i;j++)
-    {
-                aux=(struct pila*)malloc(sizeof(struct pila));
-                if(aux)
+//printf("lista:\n");
+for(j=0;j<i;j++)
+{
+                aux=(struct cola*)malloc(sizeof(struct cola));
+                if(aux)///sin abreviar if(aux!=0)
                 {
-                      aux->dato=ordenar[j];
-                      aux->l=p;
-                      p=aux;
+                    aux->dato=ordenar[j];
+              //      printf("%s\t     %-20s    %04d            %-20s    %-20s     \n",aux->dato.nombre,aux->dato.apellido,aux->dato.edad,aux->dato.telefono,aux->dato.mail);
+                    if(p==NULL) p=u=aux;
+                    else
+                    {
+                        u->l=aux;
+                        u=aux;
+                    }
+                    u->l=NULL;
                 }
                 else printf("\n Memoria insuficiente\n");
-    }
+}
+//system("pause");
+
    ///lista guardarla en un archivo de organización directa llamado "contactos_ordenados.dat"
    ///GUARDADO
-   printf("imprimir:\nNombre:      Apellido:               Edad:           Telefono:               Mail:              Posicion Fisica:\n");
+   printf("imprimir:\nApellido:    Nombre:                 Edad:           Telefono:               Mail:              Posicion Fisica:\n");
 
     datos_t2 bf2;
     if((fp=fopen("contactos_ordenados.dat","ab"))==NULL)
@@ -111,12 +120,10 @@ int main()
         bf2.edad=p->dato.edad;
         strcpy(bf2.telefono,p->dato.telefono);
         strcpy(bf2.mail,p->dato.mail);
-        printf("%s\t     %-20s    %04d            %-20s    %-20s     %d\n",bf2.nombre,bf2.apellido,bf2.edad,bf2.telefono,bf2.mail,bf2.pf);
+        printf("%s\t     %-20s    %04d            %-20s    %-20s     %d\n",bf2.apellido,bf2.nombre,bf2.edad,bf2.telefono,bf2.mail,bf2.pf);
         j++;
         bf2.pf=j;
-
         fwrite(&bf2,sizeof(datos_t2),1,fp);
-
         aux=p;
         p=p->l;
         free(aux);
@@ -126,3 +133,4 @@ int main()
     fclose(fp);
     return 0;
 }
+

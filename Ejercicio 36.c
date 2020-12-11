@@ -33,10 +33,10 @@ void alta(datos_t);
 void listar(FILE *,char * n);
 void consulta(void);
 
-struct cola
+struct lista
 {
     datos_t dato;
-    struct cola *l;
+    struct lista *l;
 };
 
 int menu(void);
@@ -45,10 +45,9 @@ datos_t carga_datos(void);
 int main()
 {
     int op,i=0,j,k,id;
-    datos_t ordenar[100];
     datos_t datos;
     datos_t auxo;//auxiliar para ordenar
-    struct cola *p=NULL, *aux,*u;
+    struct lista *p=NULL,*u=NULL, *aux,*r;
     datos_t bf;
     FILE *fp;
     ///RECUPERO DATOS   lea al archivo "contactos.dat" creado en el Ejercicio 35
@@ -57,80 +56,74 @@ int main()
 
     while(!feof(fp))
     {
-         ordenar[i]=bf;
-         i++;
+         aux=(struct lista*)malloc(sizeof(struct lista));
+            if(aux)
+            {
+                aux->dato=bf;
+                if(p==NULL)
+                {
+                    p=u=aux;
+                    u->l=NULL;
+                 }
+                else
+                {
+                    r=p;
+                    while(1)
+                    {
+                        if(strcmp(r->dato.apellido,aux->dato.apellido)==1)  ///si el dato del puntero r es mayor que el dato del puntero aux
+                        {
+                            aux->l=p;
+                            p=aux;
+                            break;
+                        }
+
+                        while(r->l!=0)  ///mientras el lazo del puntero no llegue al final
+                        {
+                            if(strcmp(r->l->dato.apellido,aux->dato.apellido)==-1)   ///si el dato del siguiente elemento del puntero r  es menor al dato del puntero aux
+                            {
+                                r=r->l;  ///r es igual al siguiente
+                            }
+                            else break;  ///si el dato del siguiente elemento del puntero r es mayor  se rompe el mientras
+                        }
+
+                        aux->l=r->l;
+                        r->l=aux;
+                        break;
+                    }
+
+                }
+            }
          fread(&bf,sizeof(datos_t),1,fp);
     }
     fclose(fp);
 ///FIN DE RECUPERACION DE DATOS
 
-///ORDEN ALFABETICO
-    for(j=0;j<i-1;j++)
-    {
-        for(k=j+1;k<i;k++)
-        {
-            if(strcmp(ordenar[j].apellido,ordenar[k].apellido)==1)
-            {
-                auxo=ordenar[k];
-                ordenar[k]=ordenar[j];
-                ordenar[j]=auxo;
-            }
-        }
-    }
-///FIN ORDEN ALFABETICO
-
-///GUARDADO EN LISTA  crear una lista, en memoria dinámica, ordenada alfabéticamente.
-//printf("lista:\n");
-for(j=0;j<i;j++)
-{
-                aux=(struct cola*)malloc(sizeof(struct cola));
-                if(aux)///sin abreviar if(aux!=0)
-                {
-                    aux->dato=ordenar[j];
-              //      printf("%s\t     %-20s    %04d            %-20s    %-20s     \n",aux->dato.nombre,aux->dato.apellido,aux->dato.edad,aux->dato.telefono,aux->dato.mail);
-                    if(p==NULL) p=u=aux;
-                    else
-                    {
-                        u->l=aux;
-                        u=aux;
-                    }
-                    u->l=NULL;
-                }
-                else printf("\n Memoria insuficiente\n");
-}
-//system("pause");
 
    ///lista guardarla en un archivo de organización directa llamado "contactos_ordenados.dat"
    ///GUARDADO
-   printf("imprimir:\nApellido:    Nombre:                 Edad:           Telefono:               Mail:              Posicion Fisica:\n");
-
     datos_t2 bf2;
-    if((fp=fopen("contactos_ordenados.dat","ab"))==NULL)
+    if((fp=fopen("contactos_ordenados.dat","wb"))==NULL)
     {
         printf("no se puede crear/abrir archivo");
         return 0;
     }
     j=0;
-    while(p)
-       {
-        if(p)
-        {
-        strcpy(bf2.nombre,p->dato.nombre);
-        strcpy(bf2.apellido,p->dato.apellido);
-        bf2.edad=p->dato.edad;
-        strcpy(bf2.telefono,p->dato.telefono);
-        strcpy(bf2.mail,p->dato.mail);
-        printf("%s\t     %-20s    %04d            %-20s    %-20s     %d\n",bf2.apellido,bf2.nombre,bf2.edad,bf2.telefono,bf2.mail,bf2.pf);
-        j++;
-        bf2.pf=j;
-        fwrite(&bf2,sizeof(datos_t2),1,fp);
-        aux=p;
-        p=p->l;
-        free(aux);
-        }
-        else printf("\n pila vacia\n");
-       }
-    fclose(fp);
+             aux=p;
+            while(aux)
+            {
+                strcpy(bf2.nombre,aux->dato.nombre);
+                strcpy(bf2.apellido,aux->dato.apellido);
+                bf2.edad=aux->dato.edad;
+                strcpy(bf2.telefono,aux->dato.telefono);
+                strcpy(bf2.mail,aux->dato.mail);
+                printf("%s\t     %-20s    %04d            %-20s    %-20s     %d\n",bf2.apellido,bf2.nombre,bf2.edad,bf2.telefono,bf2.mail,bf2.pf);
+                j++;
+                bf2.pf=j;
+                fwrite(&bf2,sizeof(datos_t2),1,fp);
+
+                aux=aux->l;
+            }
+ fclose(fp);
+
     return 0;
 }
-
